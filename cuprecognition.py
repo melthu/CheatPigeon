@@ -32,9 +32,9 @@ known_cups = [
 
 # Define moves for each cup (example moves: you must fill in properly)
 cup_moves = {
-    0: (0, 5000), 
-    1: (0, 1000), 
-    2: (0, 1000), 
+    0: (100, 5000), 
+    1: (600, 5000), 
+    2: (-600, 5000), 
     3: (0, 1000), 
     4: (0, 1000), 
     5: (0, 1000), 
@@ -84,7 +84,7 @@ def stroke(dx, dy):
     # always lower the pen first
     send_moves(["PENDOWN"])
     ser.readline()
-    time.sleep(0.2)
+    time.sleep(0.6)
 
     # draw out
     send_moves([(dx, dy)])
@@ -93,12 +93,12 @@ def stroke(dx, dy):
     # lift the pen
     send_moves(["PENUP"])
     ser.readline()
-    time.sleep(0.6)
+    #time.sleep(0.2)
 
-    time.sleep(1.0)
+    time.sleep(0.3)
 
     # return home
-    send_moves([(-dx, -dy)])
+    send_moves([(-dx*1.039, -dy*1.039)])
     ser.readline()
     time.sleep(0.5)
 
