@@ -8,7 +8,7 @@ import serial.tools.list_ports
 monitor = {"top": 37, "left": 1161, "width": 351, "height": 758}
 cup_template = cv2.imread("cup.png", 0)
 waiting_template = cv2.imread("waiting.png", 0)
-waiting_threshold = 0.45
+waiting_threshold = 0.6
 
 match_threshold = 0.65
 expected_cups_count = 10
@@ -25,17 +25,29 @@ time.sleep(2)
 
 # Define known cup positions
 known_cups = [
-    (304,580), (258, 531), (344, 528), (217, 480), (302,480), (382, 481), (181, 446), (427, 446),
+    (304, 581), (258, 531), (344, 528), (217, 480), (302,480), (382, 481), (181, 446), (427, 446),
     (302, 555), (259, 505), (344, 504), (222, 459), (382, 460),
     (302, 529), (250, 482), (331, 480)
 ]
 
 # Define moves for each cup (example moves: you must fill in properly)
 cup_moves = {
-    0: ["PENUP"], 
-    1: [(150, 0), (0, 180)],
-    2: [(80, 20)],
-    15: [(1000,1000)]
+    0: (0, 5000), 
+    1: (0, 1000), 
+    2: (0, 1000), 
+    3: (0, 1000), 
+    4: (0, 1000), 
+    5: (0, 1000), 
+    6: (0, 1000), 
+    7: (0, 1000), 
+    8: (0, 1000), 
+    9: (0, 1000), 
+    10: (0, 1000), 
+    11: (0, 1000), 
+    12: (0, 1000), 
+    13: (0, 1000), 
+    14: (0, 1000),
+    15: (0, 1000),
     
     # ...
 }
@@ -51,19 +63,48 @@ def is_stable(new_coords, last_coords, threshold=5):
     dy = abs(new_coords[1] - last_coords[1])
     return dx < threshold and dy < threshold
 
-def send_moves(moves):
-    command = ""
-    for move in moves:
-        if isinstance(move, str):
-            command += move + ";"
-        else:
-            dx, dy = move
-            command += f"{dx},{dy};"
-    command += "\n"
-    ser.write(command.encode())
-    print("Sent to Arduino:", command.strip())
 
-def match_to_cup(x, y, tolerance=30):
+def send_moves(moves):
+    cmd = ""
+    for m in moves:
+        if isinstance(m, str):
+            if m == "PENUP":
+                cmd += "0,0,1,1;"     # penCommand=1, penUp=1
+            elif m == "PENDOWN":
+                cmd += "0,0,1,0;"     # penCommand=1, penUp=0
+        else:
+            dx, dy = m
+            cmd += f"{dx},{dy},0,0;"  # penCommand=0, penUp ignored
+    cmd += "\n"
+    ser.write(cmd.encode())
+    print("Sent to Arduino:", cmd.strip())
+
+
+def stroke(dx, dy):
+    # always lower the pen first
+    send_moves(["PENDOWN"])
+    ser.readline()
+    time.sleep(0.2)
+
+    # draw out
+    send_moves([(dx, dy)])
+    ser.readline()   # wait for “done”
+
+    # lift the pen
+    send_moves(["PENUP"])
+    ser.readline()
+    time.sleep(0.6)
+
+    time.sleep(1.0)
+
+    # return home
+    send_moves([(-dx, -dy)])
+    ser.readline()
+    time.sleep(0.5)
+
+    ser.flushInput()
+
+def match_to_cup(x, y, tolerance=15):
     best_idx = -1
     best_dist2 = tolerance * tolerance
     for idx, (cx, cy) in enumerate(known_cups):
@@ -153,20 +194,20 @@ with mss.mss() as sct:
                 cv2.circle(frame, target, 10 + 2 * stable_count, (255, 0, 255), 2)
                 cv2.putText(frame, f"Stable: {stable_count}", (target[0] + 15, target[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1)
 
-            if stable_count >= required_stability:
-                idx = match_to_cup(*target)
-                if idx != -1 and idx in cup_moves:
-                    send_moves(cup_moves[idx])
-                    # After shooting, remove the matched cup and its move
-                    if 0 <= idx < len(known_cups):
-                        del known_cups[idx]
-                    if idx in cup_moves:
-                        del cup_moves[idx]
-                else:
-                    print("No matching cup or moves found.")
-                stable_count = 0
-                response = ser.readline().decode().strip()
-                print("Arduino:", response)
+
+
+        if stable_count >= required_stability:
+            idx = match_to_cup(*target)
+            if idx != -1 and idx in cup_moves:
+                dx, dy = cup_moves[idx]
+                stroke(dx, dy)            # ← use helper
+                known_cups.pop(idx)
+                cup_moves.pop(idx)
+            else:
+                print("No move defined for cup", idx)
+            stable_count = 0
+
+
 
         for rect in rects:
             cv2.rectangle(frame, (rect[0], rect[1]), (rect[2], rect[3]), (0, 255, 0), 2)
