@@ -1,0 +1,30 @@
+# Ignore virtual environment directory
+.venv/
+
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+
+# Installer logs
+ pip-log.txt
+pip-delete-this-directory.txt
+
+# OS generated files
+.DS_Store
+
+# Python test/coverage reports
+.coverage
+.tox/
+nosetests.xml
+coverage.xml
+htmlcov/
+
+# Misc
+*.bak
+*.swp 

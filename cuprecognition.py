@@ -10,7 +10,7 @@ cup_template = cv2.imread("cup.png", 0)
 waiting_template = cv2.imread("waiting.png", 0)
 waiting_threshold = 0.6
 
-match_threshold = 0.65
+match_threshold = 0.7
 expected_cups_count = 10
 
 ports = serial.tools.list_ports.comports()
@@ -23,31 +23,31 @@ if ser is None:
     raise RuntimeError("Arduino not found. Is it connected via USB?")
 time.sleep(2)
 
-# Define known cup positions
+# Known cup positions
 known_cups = [
     (304, 581), (258, 531), (344, 528), (217, 480), (302,480), (382, 481), (181, 446), (427, 446),
     (302, 555), (259, 505), (344, 504), (222, 459), (382, 460),
     (302, 529), (250, 482), (331, 480)
 ]
 
-# Define moves for each cup (example moves: you must fill in properly)
+# Moves for each cup
 cup_moves = {
-    0: (0, 5000), 
-    1: (0, 1000), 
-    2: (0, 1000), 
-    3: (0, 1000), 
-    4: (0, 1000), 
-    5: (0, 1000), 
-    6: (0, 1000), 
-    7: (0, 1000), 
-    8: (0, 1000), 
-    9: (0, 1000), 
-    10: (0, 1000), 
-    11: (0, 1000), 
-    12: (0, 1000), 
-    13: (0, 1000), 
-    14: (0, 1000),
-    15: (0, 1000),
+    0: (0, 1500), 
+    1: (0, 1500), 
+    2: (0, 1500), 
+    3: (0, 1500), 
+    4: (0, 1500), 
+    5: (0, 1500), 
+    6: (0, 1500), 
+    7: (0, 1500), 
+    8: (0, 1500), 
+    9: (0, 1500), 
+    10: (0, 1500), 
+    11: (0, 1500), 
+    12: (0, 1500), 
+    13: (0, 2000), 
+    14: (0, 1500),
+    15: (0, 1500),
     
     # ...
 }
@@ -200,7 +200,7 @@ with mss.mss() as sct:
             idx = match_to_cup(*target)
             if idx != -1 and idx in cup_moves:
                 dx, dy = cup_moves[idx]
-                stroke(dx, dy)            # ← use helper
+                stroke(dx, dy)            
                 known_cups.pop(idx)
                 cup_moves.pop(idx)
             else:
