@@ -29,3 +29,10 @@ This project is a physical solver for **GamePigeon Cup Pong**. The system captur
 4. **Movement Command Generation:** Based on the current known position of the plotter's stylus and the calculated target (X, Y) position in the plotter's coordinate system, the script determines the necessary movement. This involves calculating the distance and direction of travel for the X and Y axes.
 5. **Serial Communication Protocol:** The calculated movement commands are formatted into a specific string or byte sequence that the Arduino firmware is designed to interpret. The `pyserial` library is used to send this formatted command over the serial port connected to the Arduino.
 6. **Arduino Control:** The Arduino sketch (`xyPlotter.ino`) listens for commands on its serial port. Upon receiving a valid movement command, the Arduino parses it, calculates the required steps for its stepper motors, and controls the motor drivers to move the plotter arm to the target physical coordinates. The firmware handles acceleration, deceleration, and maintaining position.
+
+## Demo
+
+https://github.com/user-attachments/assets/fce9b6d5-d0f4-4520-85dc-2a4b5c7c3c49
+
+
+
